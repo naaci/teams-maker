@@ -9,13 +9,19 @@ $Excel = New-Object -ComObject Excel.Application
 Get-ChildItem -Filter "*.xls" | Foreach-Object{
     Write-Host $_.FullName -ForegroundColor Yellow
     $Excel.Workbooks.Open($_.FullName).Sheets | ForEach-Object{
-        $TeamName = $_.Range("W2").Value2
+        $CourseCode = $_.Range("n2").Value2 -split "`n"
+        $CourseName = $_.Range("W2").Value2 -split "`n"
+        $TeamName = "$($CourseCode[0]) $($CourseName[0]) ($(Get-Date -Format yyyy))"
     
         $NewTeam = Get-Team -DisplayName $TeamName
         if (-Not $NewTeam) {
-            $NewTeam = New-Team -DisplayName $TeamName -Template "EDU_Class" -ErrorAction Stop
-            Write-Host "New team created: $TeamName"
+            Write-Host "New team: $TeamName"
+            $NewTeam = New-Team -DisplayName $TeamName -Description  TeamNames[1] -Template "EDU_Class" -ErrorAction Stop
+            Write-Host "OK" -ForegroundColor Green
         }
+
+        $NewTeam.Description
+
         $Students = $_.Range("B:B").Value2 | Where {$_ -Match "^\d+$"} | ForEach-Object {
                 $StudentId = $_
 
